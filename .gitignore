@@ -1,0 +1,62 @@
+# ---------- Environment / Secrets ----------
+.env
+*.env
+!.env.example
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ---------- Python packages (if you ever switch to venv later) ----------
+venv/
+env/
+ENV/
+.venv/
+
+# ---------- Pip / build artifacts ----------
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ---------- Jupyter / IDE clutter ----------
+.ipynb_checkpoints/
+.vscode/
+.idea/
+*.swp
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- Uploaded / test documents ----------
+backend/sample_docs/
+uploads/
+*.pdf
+*.docx
+*.csv
+*.xlsx
+!requirements.txt
+
+# ---------- Database dumps / local data ----------
+*.sqlite3
+*.db
+pgdata/
+
+# ---------- Node / widget frontend ----------
+node_modules/
+widget/build/
+widget/dist/
+npm-debug.log*
+
+# ---------- OS junk ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Misc test/scratch files ----------
+backend/test_groq.py
+backend/rag_test.py
+backend/chat_test.py
