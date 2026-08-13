@@ -10,12 +10,45 @@ def init_db():
     cur = conn.cursor()
 
     cur.execute("""
-        CREATE TABLE IF NOT EXISTS organizations (
-            id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL,
-            domain TEXT UNIQUE,
-            created_at TIMESTAMP DEFAULT NOW()
-        );
+    CREATE TABLE IF NOT EXISTS organizations (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        domain TEXT UNIQUE,
+        business_type TEXT,
+        description TEXT,
+        agent_persona TEXT,
+        embed_token TEXT UNIQUE,
+        greeting_message TEXT,
+        widget_primary_color TEXT DEFAULT '#6C5CE7',
+        widget_theme TEXT DEFAULT 'light',
+        widget_bubble_style TEXT DEFAULT 'rounded',
+        widget_position TEXT DEFAULT 'right',
+        widget_icon TEXT DEFAULT 'chat',
+        created_at TIMESTAMP DEFAULT NOW()
+    );
+""")
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS otp_verifications (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL,
+        organization_id INTEGER REFERENCES organizations(id) NOT NULL,
+        otp_code TEXT NOT NULL,
+        verified BOOLEAN DEFAULT FALSE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(email, organization_id)
+    );
+""")
+    # Safe for pre-existing databases that were created before these columns
+    # existed — each ADD COLUMN is a no-op if the column is already there.
+    cur.execute("""
+        ALTER TABLE organizations
+            ADD COLUMN IF NOT EXISTS greeting_message TEXT,
+            ADD COLUMN IF NOT EXISTS widget_primary_color TEXT DEFAULT '#6C5CE7',
+            ADD COLUMN IF NOT EXISTS widget_theme TEXT DEFAULT 'light',
+            ADD COLUMN IF NOT EXISTS widget_bubble_style TEXT DEFAULT 'rounded',
+            ADD COLUMN IF NOT EXISTS widget_position TEXT DEFAULT 'right',
+            ADD COLUMN IF NOT EXISTS widget_icon TEXT DEFAULT 'chat';
     """)
 
     cur.execute("""

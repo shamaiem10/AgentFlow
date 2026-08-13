@@ -30,7 +30,7 @@ reason: <one sentence explaining why>"""
     response = llm.invoke([{"role": "user", "content": prompt}])
     output = response.content.strip()
 
-    strategy = "recursive"  # safe default
+    strategy = "recursive" 
     reason = "Default fallback strategy."
 
     for line in output.split("\n"):

@@ -8,7 +8,7 @@ def add_message(session_id, role, content):
     key = f"chat:{session_id}"
     message = json.dumps({"role": role, "content": content})
     r.rpush(key, message)
-    r.ltrim(key, -20, -1)  # keep only the last 20 messages
+    r.ltrim(key, -20, -1) 
 
 def get_recent_messages(session_id, n=10):
     key = f"chat:{session_id}"

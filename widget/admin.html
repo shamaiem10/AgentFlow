@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Set up your assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css">
+<style>
+    :root {
+        /* ---- workbench chrome (the tool's own UI — stays neutral) ---- */
+        --canvas: #F6F4EC;
+        --canvas-soft: #EFEBDD;
+        --paper: #FFFFFF;
+        --ink: #191826;
+        --ink-soft: #55536C;
+        --muted: #92909F;
+        --line: #E2DECD;
+        --grid-dot: #DAD5C0;
+        --chrome: #2F6F5E;
+        --chrome-soft: #E3EDE8;
+        --chrome-ink: #1E4A3D;
+        --danger: #C1443A;
+        --danger-soft: #FBEAE8;
+        --radius-lg: 18px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+
+        /* ---- the assistant's own colors — set live by the user below ---- */
+        --user-accent: #2F6F5E;
+        --user-accent-soft: #E3EDE8;
+        --user-bubble-radius: 16px 16px 16px 4px;
+        --widget-bg: #FFFFFF;
+        --widget-header-ink: #FFFFFF;
+        --widget-body: #F6F4EC;
+        --widget-text: #191826;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0;
+        font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--ink);
+        background:
+            radial-gradient(var(--grid-dot) 1px, transparent 1px),
+            var(--canvas);
+        background-size: 22px 22px;
+        min-height: 100vh;
+    }
+
+    /* ---------- Shell ---------- */
+    .shell { max-width: 1020px; margin: 0 auto; padding: 44px 24px 90px; }
+
+    .brandbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 34px; }
+    .brandbar-left { display: flex; align-items: center; gap: 10px; }
+    .brandbar-mark {
+        width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+        background: var(--chrome); color: white; font-size: 15px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .brandbar-name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+    .brandbar-eyebrow {
+        font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ---------- Steps ---------- */
+    .steps { display: flex; align-items: center; gap: 10px; margin-bottom: 30px; }
+    .step-pip { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+    .step-pip .num {
+        width: 21px; height: 21px; border-radius: 5px; border: 1.5px solid var(--line);
+        display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--muted);
+        background: var(--paper);
+    }
+    .step-pip.active { color: var(--ink); }
+    .step-pip.active .num { background: var(--chrome); border-color: var(--chrome); color: white; }
+    .step-pip.done .num { background: var(--chrome-ink); border-color: var(--chrome-ink); color: white; }
+    .step-pip.done { color: var(--ink); }
+    .step-line { flex: 1; max-width: 44px; height: 1.5px; background: var(--line); }
+
+    h1 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 29px; letter-spacing: -0.02em; margin: 0 0 8px; }
+    .lede { color: var(--ink-soft); font-size: 15px; line-height: 1.55; margin: 0 0 34px; max-width: 580px; }
+
+    /* ---------- Layout ---------- */
+    .grid { display: grid; grid-template-columns: 1fr 300px; gap: 26px; align-items: start; }
+    @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+
+    .card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 26px; }
+    .card + .card { margin-top: 20px; }
+
+    .card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+    .card-head h2 { font-family: 'Space Grotesk', sans-serif; font-size: 16px; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+    .card-head .tag { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+
+    /* ---------- Form ---------- */
+    .field-group { margin-bottom: 20px; }
+    .field-group:last-child { margin-bottom: 0; }
+    label.flabel { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 6px; font-family: 'Space Grotesk', sans-serif; }
+    .fhint { font-size: 12px; color: var(--muted); margin: 5px 0 0; line-height: 1.5; }
+    input[type="text"], textarea, select {
+        width: 100%; border: 1.5px solid var(--line); border-radius: var(--radius-sm);
+        padding: 11px 13px; font-size: 14px; font-family: 'IBM Plex Sans', sans-serif; color: var(--ink);
+        background: var(--canvas-soft); outline: none;
+        transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    textarea { resize: vertical; min-height: 84px; line-height: 1.5; }
+    input[type="text"]:focus, textarea:focus, select:focus {
+        border-color: var(--chrome); background: var(--paper); box-shadow: 0 0 0 3.5px var(--chrome-soft);
+    }
+
+    .biztype-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .biztype-opt {
+        border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px;
+        font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px;
+        transition: border-color 0.15s ease, background 0.15s ease; background: var(--canvas-soft);
+    }
+    .biztype-opt i { color: var(--muted); font-size: 14px; }
+    .biztype-opt:hover { border-color: #C8D9D2; }
+    .biztype-opt.selected { border-color: var(--chrome); background: var(--chrome-soft); color: var(--chrome-ink); }
+    .biztype-opt.selected i { color: var(--chrome-ink); }
+
+    /* ---------- Segmented controls (appearance) ---------- */
+    .segmented { display: flex; gap: 6px; flex-wrap: wrap; }
+    .segmented .seg-opt {
+        border: 1.5px solid var(--line); border-radius: var(--radius-sm); padding: 8px 13px;
+        font-size: 12.5px; font-weight: 500; cursor: pointer; background: var(--canvas-soft); color: var(--ink-soft);
+        display: flex; align-items: center; gap: 6px; transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .segmented .seg-opt:hover { border-color: #C8D9D2; }
+    .segmented .seg-opt.selected { border-color: var(--chrome); background: var(--chrome-soft); color: var(--chrome-ink); font-weight: 600; }
+    .segmented .seg-opt .shape-swatch { width: 13px; height: 13px; background: var(--ink-soft); flex-shrink: 0; }
+
+    /* paint-chip swatch strip */
+    .swatch-strip { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .swatch {
+        width: 30px; height: 30px; border-radius: 8px; cursor: pointer; position: relative; flex-shrink: 0;
+        border: 2px solid rgba(0,0,0,0.06); box-shadow: 0 2px 5px -2px rgba(25,24,38,0.35);
+        transition: transform 0.12s ease;
+    }
+    .swatch:hover { transform: translateY(-2px); }
+    .swatch.selected::after {
+        content: "\f26e"; font-family: "bootstrap-icons"; position: absolute; inset: 0;
+        display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+    .swatch-custom {
+        width: 30px; height: 30px; border-radius: 8px; border: 1.5px dashed var(--line); cursor: pointer;
+        display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 13px;
+        background: var(--canvas-soft); flex-shrink: 0; position: relative; overflow: hidden;
+    }
+    .swatch-custom input[type="color"] {
+        position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px);
+        border: none; padding: 0; cursor: pointer; opacity: 0; 
+    }
+    .hex-readout {
+        font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-soft);
+        background: var(--canvas-soft); border: 1px solid var(--line); border-radius: var(--radius-sm);
+        padding: 7px 10px; margin-left: 2px;
+    }
+
+    .icon-picker { display: flex; gap: 7px; flex-wrap: wrap; }
+    .icon-opt {
+        width: 36px; height: 36px; border-radius: var(--radius-sm); border: 1.5px solid var(--line);
+        display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--canvas-soft);
+        color: var(--ink-soft); font-size: 15px; transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+    }
+    .icon-opt:hover { border-color: #C8D9D2; }
+    .icon-opt.selected { border-color: var(--chrome); background: var(--chrome-soft); color: var(--chrome-ink); }
+
+    /* ---------- Dropzone ---------- */
+    .dropzone {
+        border: 1.5px dashed var(--line); border-radius: var(--radius-md);
+        padding: 24px 16px; text-align: center; cursor: pointer;
+        background: var(--canvas-soft); transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    .dropzone:hover, .dropzone.drag { border-color: var(--chrome); background: var(--chrome-soft); }
+    .dropzone i { font-size: 21px; color: var(--chrome); margin-bottom: 8px; display: block; }
+    .dropzone .dz-title { font-size: 13.5px; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+    .dropzone .dz-sub { font-size: 11.5px; color: var(--muted); }
+
+    .filelist { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+    .filerow { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper); }
+    .filerow i.fi { color: var(--chrome); font-size: 15px; flex-shrink: 0; }
+    .filerow .fname { flex: 1; min-width: 0; font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .filerow .fsize { font-size: 11.5px; color: var(--muted); flex-shrink: 0; }
+    .filerow .fremove {
+        border: none; background: transparent; color: var(--muted); cursor: pointer; font-size: 13px;
+        width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .filerow .fremove:hover { background: var(--danger-soft); color: var(--danger); }
+
+    /* ---------- Submit ---------- */
+    .submit-row { margin-top: 26px; display: flex; align-items: center; gap: 14px; }
+    button.primary {
+        border: none; border-radius: var(--radius-md); background: var(--chrome);
+        color: white; font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 14.5px;
+        padding: 13px 22px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+        transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+    button.primary:hover { background: var(--chrome-ink); transform: translateY(-1px); }
+    button.primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+    .submit-status { font-size: 12px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; }
+    .submit-error { font-size: 12.5px; color: var(--danger); display: none; align-items: center; gap: 6px; margin-top: 10px; }
+
+    /* ---------- Live preview: mockup "site" frame with widget in the corner ---------- */
+    .preview-card { position: sticky; top: 26px; }
+    .preview-label { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 12px; }
+
+    .site-frame {
+        border-radius: 14px; border: 1px solid var(--line); background: var(--paper); overflow: hidden;
+        box-shadow: 0 14px 30px -18px rgba(25,24,38,0.35);
+    }
+    .site-frame-bar { display: flex; align-items: center; gap: 5px; padding: 9px 11px; border-bottom: 1px solid var(--line); background: var(--canvas-soft); }
+    .site-frame-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+    .site-frame-url {
+        margin-left: 6px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted);
+        background: var(--paper); border: 1px solid var(--line); border-radius: 5px; padding: 2px 8px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .site-frame-body {
+        position: relative; min-height: 210px; background:
+            radial-gradient(var(--grid-dot) 1px, transparent 1px) 0 0/16px 16px, var(--canvas);
+        padding: 14px;
+    }
+    .site-frame-lines { display: flex; flex-direction: column; gap: 6px; opacity: 0.55; }
+    .site-frame-lines div { height: 6px; border-radius: 3px; background: var(--line); }
+    .site-frame-lines div:nth-child(1) { width: 62%; }
+    .site-frame-lines div:nth-child(2) { width: 84%; }
+    .site-frame-lines div:nth-child(3) { width: 45%; }
+
+    .float-launcher {
+        position: absolute; bottom: 12px; width: 34px; height: 34px; border-radius: 50%;
+        background: var(--user-accent); color: white; display: flex; align-items: center; justify-content: center;
+        font-size: 15px; box-shadow: 0 6px 14px -4px rgba(0,0,0,0.4); transition: right 0.2s ease, left 0.2s ease;
+    }
+    .float-launcher.pos-right { right: 12px; }
+    .float-launcher.pos-left { left: 12px; }
+
+    .mini-widget {
+        position: absolute; bottom: 54px; width: 190px; border-radius: 14px; overflow: hidden;
+        border: 1px solid var(--line); box-shadow: 0 16px 34px -14px rgba(25,24,38,0.5); background: var(--widget-bg);
+        transition: right 0.2s ease, left 0.2s ease, background 0.2s ease;
+    }
+    .mini-widget.pos-right { right: 12px; }
+    .mini-widget.pos-left { left: 12px; }
+
+    .mini-header { background: var(--user-accent); padding: 11px 10px; display: flex; align-items: center; gap: 8px; }
+    .mini-avatar { width: 24px; height: 24px; border-radius: 7px; flex-shrink: 0; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; color: var(--widget-header-ink); font-size: 11.5px; }
+    .mini-header-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .mini-title { font-family: 'Space Grotesk', sans-serif; font-weight: 600; font-size: 11.5px; color: var(--widget-header-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mini-status { font-size: 9.5px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
+    .mini-status .dot { width: 5px; height: 5px; border-radius: 50%; background: #3DDC97; display: inline-block; }
+    .mini-body { padding: 11px 9px; background: var(--widget-body); min-height: 56px; }
+    .mini-bubble {
+        background: var(--widget-bg); border: 1px solid var(--line); border-radius: var(--user-bubble-radius);
+        padding: 8px 10px; font-size: 11px; line-height: 1.45; color: var(--widget-text); max-width: 92%;
+    }
+
+    .swatch-note { margin-top: 14px; font-size: 11.5px; color: var(--muted); line-height: 1.55; border-top: 1px dashed var(--line); padding-top: 12px; }
+    .swatch-note strong { color: var(--ink-soft); }
+
+    /* ---------- Success panel ---------- */
+    .success-wrap { display: none; }
+    .success-badge {
+        width: 50px; height: 50px; border-radius: 13px; margin-bottom: 18px;
+        background: var(--chrome); display: flex; align-items: center; justify-content: center; color: white; font-size: 22px;
+    }
+    .code-block {
+        background: var(--ink); border-radius: var(--radius-md); padding: 16px 18px;
+        font-family: 'IBM Plex Mono', Consolas, monospace; font-size: 12.5px; color: #E7E5EF;
+        overflow-x: auto; white-space: pre; line-height: 1.6; position: relative;
+    }
+    .copy-btn {
+        position: absolute; top: 10px; right: 10px; border: none; border-radius: 7px;
+        background: rgba(255,255,255,0.12); color: white; font-size: 11.5px; font-weight: 600;
+        padding: 6px 10px; cursor: pointer; display: flex; align-items: center; gap: 5px;
+        font-family: 'IBM Plex Sans', sans-serif; transition: background 0.15s ease;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.22); }
+    .copy-btn.copied { background: var(--chrome); color: white; }
+
+    .kv-row { display: flex; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .kv-row:last-child { border-bottom: none; }
+    .kv-row .k { color: var(--muted); font-weight: 500; }
+    .kv-row .v { color: var(--ink); font-weight: 600; text-align: right; max-width: 60%; word-break: break-word; }
+    .kv-row .v.with-swatch { display: inline-flex; align-items: center; gap: 7px; }
+    .kv-swatch { width: 13px; height: 13px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); display: inline-block; }
+
+    .doc-result { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; margin-top: 8px; font-size: 13px; }
+    .doc-result i { color: var(--chrome); font-size: 15px; }
+    .doc-result .dname { flex: 1; font-weight: 500; }
+    .doc-result .dmeta { color: var(--muted); font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; }
+
+    .restart-link {
+        display: inline-flex; align-items: center; gap: 6px; margin-top: 22px; font-size: 13px;
+        color: var(--chrome-ink); font-weight: 600; text-decoration: none; cursor: pointer; background: none; border: none;
+        font-family: 'IBM Plex Sans', sans-serif;
+    }
+    .restart-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+    <div class="brandbar">
+        <div class="brandbar-left">
+            <div class="brandbar-mark"><i class="bi bi-tools"></i></div>
+            <div class="brandbar-name">Assistant Setup</div>
+        </div>
+        <div class="brandbar-eyebrow">Workbench</div>
+    </div>
+
+    <div class="steps">
+        <div class="step-pip active" id="step-pip-1"><span class="num">1</span>Build your assistant</div>
+        <div class="step-line"></div>
+        <div class="step-pip" id="step-pip-2"><span class="num">2</span>Get your embed code</div>
+    </div>
+
+    <!-- ================= FORM VIEW ================= -->
+    <div id="form-view">
+        <h1>Set up your assistant</h1>
+        <p class="lede">Tell us about your business, choose how the chat widget should look, and upload the documents your assistant should know about. We'll generate an embeddable widget you can drop straight into your site.</p>
+
+        <div class="grid">
+            <div>
+                <div class="card">
+                    <div class="card-head"><h2>Business details</h2><span class="tag">01</span></div>
+                    <form id="onboard-form">
+                        <div class="field-group">
+                            <label class="flabel" for="org-name">Business name</label>
+                            <input type="text" id="org-name" placeholder="e.g. Riverside Dental Clinic" required />
+                        </div>
+
+                        <div class="field-group">
+                            <label class="flabel">Business type</label>
+                            <div class="biztype-grid" id="biztype-grid">
+                                <div class="biztype-opt" data-value="Retail"><i class="bi bi-bag"></i>Retail</div>
+                                <div class="biztype-opt" data-value="Healthcare"><i class="bi bi-heart-pulse"></i>Healthcare</div>
+                                <div class="biztype-opt" data-value="Professional Services"><i class="bi bi-briefcase"></i>Professional services</div>
+                                <div class="biztype-opt" data-value="Education"><i class="bi bi-mortarboard"></i>Education</div>
+                                <div class="biztype-opt" data-value="Hospitality"><i class="bi bi-cup-hot"></i>Hospitality</div>
+                                <div class="biztype-opt" data-value="Other"><i class="bi bi-grid"></i>Other</div>
+                            </div>
+                            <input type="hidden" id="business-type" required />
+                        </div>
+
+                        <div class="field-group">
+                            <label class="flabel" for="description">What does your business do?</label>
+                            <textarea id="description" placeholder="A couple of sentences is enough — this shapes how your assistant introduces itself and talks to customers." required></textarea>
+                            <p class="fhint">Used to generate your assistant's persona and tone.</p>
+                        </div>
+
+                        <div class="field-group" style="margin-bottom:0;">
+                            <label class="flabel" for="greeting">Greeting message <span style="color:var(--muted); font-weight:400;">(optional)</span></label>
+                            <input type="text" id="greeting" placeholder="Hi! How can I help you today?" maxlength="120" />
+                            <p class="fhint">Shown first when a customer opens the widget. Leave blank to auto-generate one.</p>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><h2>Appearance</h2><span class="tag">02</span></div>
+
+                    <div class="field-group">
+                        <label class="flabel">Accent color</label>
+                        <div class="swatch-strip" id="swatch-strip">
+                            <div class="swatch selected" data-hex="#2F6F5E" style="background:#2F6F5E;"></div>
+                            <div class="swatch" data-hex="#3D5A80" style="background:#3D5A80;"></div>
+                            <div class="swatch" data-hex="#7C5CBF" style="background:#7C5CBF;"></div>
+                            <div class="swatch" data-hex="#C1443A" style="background:#C1443A;"></div>
+                            <div class="swatch" data-hex="#B8842E" style="background:#B8842E;"></div>
+                            <div class="swatch" data-hex="#26262E" style="background:#26262E;"></div>
+                            <label class="swatch-custom" title="Pick a custom color">
+                                <i class="bi bi-eyedropper"></i>
+                                <input type="color" id="custom-color" value="#2F6F5E" />
+                            </label>
+                            <span class="hex-readout" id="hex-readout">#2F6F5E</span>
+                        </div>
+                        <p class="fhint">This colors your widget's header, launcher button, and reply highlights — the rest of the tool stays neutral.</p>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="flabel">Chat bubble shape</label>
+                        <div class="segmented" id="shape-grid">
+                            <div class="seg-opt selected" data-value="rounded"><span class="shape-swatch" style="border-radius:5px 5px 5px 1px;"></span>Rounded</div>
+                            <div class="seg-opt" data-value="pill"><span class="shape-swatch" style="border-radius:7px;"></span>Pill</div>
+                            <div class="seg-opt" data-value="square"><span class="shape-swatch" style="border-radius:1px;"></span>Square</div>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="flabel">Widget theme</label>
+                        <div class="segmented" id="theme-grid">
+                            <div class="seg-opt selected" data-value="light"><i class="bi bi-sun"></i>Light</div>
+                            <div class="seg-opt" data-value="dark"><i class="bi bi-moon-stars"></i>Dark</div>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="flabel">Position on your site</label>
+                        <div class="segmented" id="position-grid">
+                            <div class="seg-opt selected" data-value="right"><i class="bi bi-align-end"></i>Bottom right</div>
+                            <div class="seg-opt" data-value="left"><i class="bi bi-align-start"></i>Bottom left</div>
+                        </div>
+                    </div>
+
+                    <div class="field-group" style="margin-bottom:0;">
+                        <label class="flabel">Launcher icon</label>
+                        <div class="icon-picker" id="icon-picker">
+                            <div class="icon-opt selected" data-value="robot"><i class="bi bi-robot"></i></div>
+                            <div class="icon-opt" data-value="chat"><i class="bi bi-chat-dots-fill"></i></div>
+                            <div class="icon-opt" data-value="stars"><i class="bi bi-stars"></i></div>
+                            <div class="icon-opt" data-value="headset"><i class="bi bi-headset"></i></div>
+                            <div class="icon-opt" data-value="heart"><i class="bi bi-chat-heart-fill"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-head"><h2>Knowledge base</h2><span class="tag">03</span></div>
+                    <div class="field-group" style="margin-bottom:0;">
+                        <div class="dropzone" id="dropzone">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <div class="dz-title">Drop files here or click to browse</div>
+                            <div class="dz-sub">PDF, DOCX, TXT, or CSV — add as many as you like</div>
+                        </div>
+                        <input type="file" id="file-input" multiple style="display:none;" />
+                        <div class="filelist" id="filelist"></div>
+                        <p class="fhint">These become the answers your assistant can pull from — FAQs, policies, catalogs, pricing sheets, anything customers might ask about.</p>
+                    </div>
+                </div>
+
+                <div class="submit-row">
+                    <button type="submit" form="onboard-form" class="primary" id="submit-btn">
+                        <i class="bi bi-magic"></i>
+                        Generate my assistant
+                    </button>
+                    <span class="submit-status" id="submit-status"></span>
+                </div>
+                <div class="submit-error" id="submit-error"><i class="bi bi-exclamation-triangle-fill"></i><span></span></div>
+            </div>
+
+            <div class="preview-card">
+                <div class="preview-label">Live preview</div>
+                <div class="site-frame">
+                    <div class="site-frame-bar">
+                        <div class="site-frame-dot"></div><div class="site-frame-dot"></div><div class="site-frame-dot"></div>
+                        <div class="site-frame-url" id="preview-url">yoursite.com</div>
+                    </div>
+                    <div class="site-frame-body">
+                        <div class="site-frame-lines"><div></div><div></div><div></div></div>
+
+                        <div class="mini-widget pos-right" id="mini-widget">
+                            <div class="mini-header">
+                                <div class="mini-avatar" id="mini-avatar"><i class="bi bi-robot"></i></div>
+                                <div class="mini-header-text">
+                                    <div class="mini-title" id="preview-title">Assistant</div>
+                                    <div class="mini-status"><span class="dot"></span>Online now</div>
+                                </div>
+                            </div>
+                            <div class="mini-body">
+                                <div class="mini-bubble" id="preview-bubble">Hi there! How can I help you today?</div>
+                            </div>
+                        </div>
+
+                        <div class="float-launcher pos-right" id="float-launcher"><i class="bi bi-robot" id="float-icon"></i></div>
+                    </div>
+                </div>
+                <div class="swatch-note" id="preview-persona">Fill in your business details to see how your assistant will greet customers.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= SUCCESS VIEW ================= -->
+    <div id="success-view" class="success-wrap">
+        <div class="success-badge"><i class="bi bi-check-lg"></i></div>
+        <h1>Your assistant is ready</h1>
+        <p class="lede">Paste this snippet into your site's HTML, right before the closing <code>&lt;/body&gt;</code> tag. The chat bubble will appear automatically, styled the way you set it up.</p>
+
+        <div class="grid">
+            <div class="card">
+                <label class="flabel">Embed snippet</label>
+                <div class="code-block" id="snippet-block">
+                    <button class="copy-btn" id="copy-btn"><i class="bi bi-clipboard"></i>Copy</button>
+                    <span id="snippet-text"></span>
+                </div>
+
+                <div style="margin-top: 24px;">
+                    <div class="kv-row"><span class="k">Organization</span><span class="v" id="result-org-name"></span></div>
+                    <div class="kv-row"><span class="k">Organization ID</span><span class="v" id="result-org-id"></span></div>
+                    <div class="kv-row"><span class="k">Embed token</span><span class="v" id="result-token"></span></div>
+                    <div class="kv-row"><span class="k">Accent color</span><span class="v with-swatch"><span class="kv-swatch" id="result-swatch"></span><span id="result-color-hex"></span></span></div>
+                    <div class="kv-row"><span class="k">Bubble &middot; position</span><span class="v" id="result-shape-pos"></span></div>
+                </div>
+
+                <div id="docs-results" style="margin-top: 20px; display: none;">
+                    <label class="flabel">Documents processed</label>
+                    <div id="docs-list"></div>
+                </div>
+
+                <button class="restart-link" id="restart-btn"><i class="bi bi-arrow-counterclockwise"></i>Set up another assistant</button>
+            </div>
+
+            <div class="preview-card">
+                <div class="preview-label">Generated persona</div>
+                <div class="card" style="padding: 18px;">
+                    <p style="font-size: 13px; line-height: 1.6; color: var(--ink-soft); margin: 0;" id="result-persona"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const API_BASE = "http://localhost:8000"; // change this to your real server URL when deployed
+
+    let selectedFiles = [];
+    let appearance = {
+        color: "#2F6F5E",
+        shape: "rounded",
+        theme: "light",
+        position: "right",
+        icon: "robot"
+    };
+    const iconClass = { robot: "bi-robot", chat: "bi-chat-dots-fill", stars: "bi-stars", headset: "bi-headset", heart: "bi-chat-heart-fill" };
+    const bubbleRadius = { rounded: "16px 16px 16px 4px", pill: "999px", square: "4px" };
+
+    /* ---------- Business type chips ---------- */
+    const biztypeGrid = document.getElementById("biztype-grid");
+    const businessTypeInput = document.getElementById("business-type");
+    biztypeGrid.addEventListener("click", (e) => {
+        const opt = e.target.closest(".biztype-opt");
+        if (!opt) return;
+        biztypeGrid.querySelectorAll(".biztype-opt").forEach(el => el.classList.remove("selected"));
+        opt.classList.add("selected");
+        businessTypeInput.value = opt.dataset.value;
+        updatePreview();
+    });
+
+    /* ---------- Appearance: accent color swatches ---------- */
+    const swatchStrip = document.getElementById("swatch-strip");
+    const customColorInput = document.getElementById("custom-color");
+    const hexReadout = document.getElementById("hex-readout");
+
+    function setAccent(hex, sourceSwatch) {
+        appearance.color = hex;
+        swatchStrip.querySelectorAll(".swatch").forEach(s => s.classList.remove("selected"));
+        if (sourceSwatch) sourceSwatch.classList.add("selected");
+        hexReadout.textContent = hex.toUpperCase();
+        customColorInput.value = hex;
+        updatePreview();
+    }
+    swatchStrip.addEventListener("click", (e) => {
+        const sw = e.target.closest(".swatch");
+        if (!sw) return;
+        setAccent(sw.dataset.hex, sw);
+    });
+    customColorInput.addEventListener("input", (e) => setAccent(e.target.value, null));
+
+    /* ---------- Appearance: segmented controls ---------- */
+    function wireSegmented(id, key) {
+        const el = document.getElementById(id);
+        el.addEventListener("click", (e) => {
+            const opt = e.target.closest(".seg-opt");
+            if (!opt) return;
+            el.querySelectorAll(".seg-opt").forEach(o => o.classList.remove("selected"));
+            opt.classList.add("selected");
+            appearance[key] = opt.dataset.value;
+            updatePreview();
+        });
+    }
+    wireSegmented("shape-grid", "shape");
+    wireSegmented("theme-grid", "theme");
+    wireSegmented("position-grid", "position");
+
+    const iconPicker = document.getElementById("icon-picker");
+    iconPicker.addEventListener("click", (e) => {
+        const opt = e.target.closest(".icon-opt");
+        if (!opt) return;
+        iconPicker.querySelectorAll(".icon-opt").forEach(o => o.classList.remove("selected"));
+        opt.classList.add("selected");
+        appearance.icon = opt.dataset.value;
+        updatePreview();
+    });
+
+    /* ---------- Dropzone / file handling ---------- */
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("file-input");
+    const filelist = document.getElementById("filelist");
+
+    function formatSize(bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+        return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+    }
+
+    function iconForFile(name) {
+        const ext = name.split(".").pop().toLowerCase();
+        if (ext === "pdf") return "bi-filetype-pdf";
+        if (ext === "docx" || ext === "doc") return "bi-filetype-docx";
+        if (ext === "csv") return "bi-filetype-csv";
+        if (ext === "txt") return "bi-filetype-txt";
+        return "bi-file-earmark-text";
+    }
+
+    function renderFileList() {
+        filelist.innerHTML = "";
+        selectedFiles.forEach((file, idx) => {
+            const row = document.createElement("div");
+            row.className = "filerow";
+            row.innerHTML = `
+                <i class="bi ${iconForFile(file.name)} fi"></i>
+                <span class="fname"></span>
+                <span class="fsize">${formatSize(file.size)}</span>
+                <button type="button" class="fremove" aria-label="Remove file"><i class="bi bi-x"></i></button>
+            `;
+            row.querySelector(".fname").textContent = file.name;
+            row.querySelector(".fremove").onclick = () => {
+                selectedFiles.splice(idx, 1);
+                renderFileList();
+            };
+            filelist.appendChild(row);
+        });
+    }
+
+    function addFiles(fileArray) {
+        for (const f of fileArray) {
+            if (!selectedFiles.some(existing => existing.name === f.name && existing.size === f.size)) {
+                selectedFiles.push(f);
+            }
+        }
+        renderFileList();
+    }
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => addFiles(Array.from(e.target.files)));
+
+    ["dragenter", "dragover"].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add("drag"); });
+    });
+    ["dragleave", "drop"].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove("drag"); });
+    });
+    dropzone.addEventListener("drop", (e) => { addFiles(Array.from(e.dataTransfer.files)); });
+
+    /* ---------- Live preview ---------- */
+    const orgNameInput = document.getElementById("org-name");
+    const descriptionInput = document.getElementById("description");
+    const greetingInput = document.getElementById("greeting");
+    const previewTitle = document.getElementById("preview-title");
+    const previewBubble = document.getElementById("preview-bubble");
+    const previewPersona = document.getElementById("preview-persona");
+    const previewUrl = document.getElementById("preview-url");
+    const miniWidget = document.getElementById("mini-widget");
+    const floatLauncher = document.getElementById("float-launcher");
+    const floatIcon = document.getElementById("float-icon");
+    const miniAvatar = document.getElementById("mini-avatar");
+    const root = document.documentElement;
+
+    function updatePreview() {
+        const name = orgNameInput.value.trim();
+        previewTitle.textContent = name || "Assistant";
+        previewUrl.textContent = name ? name.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".com" : "yoursite.com";
+
+        const greeting = greetingInput.value.trim();
+        previewBubble.textContent = greeting
+            ? greeting
+            : (name ? `Hi! I'm the assistant for ${name}. How can I help you today?` : "Hi there! How can I help you today?");
+
+        const desc = descriptionInput.value.trim();
+        const type = businessTypeInput.value;
+        if (desc || type) {
+            previewPersona.innerHTML = `Your assistant will speak as a <strong>${type ? type.toLowerCase() + " " : ""}team member</strong>${desc ? ", grounded in: \u201c" + desc.slice(0, 90) + (desc.length > 90 ? "\u2026" : "") + "\u201d" : ""}.`;
+        } else {
+            previewPersona.textContent = "Fill in your business details to see how your assistant will greet customers.";
+        }
+
+        // appearance
+        root.style.setProperty("--user-accent", appearance.color);
+        root.style.setProperty("--user-bubble-radius", bubbleRadius[appearance.shape]);
+        if (appearance.theme === "dark") {
+            root.style.setProperty("--widget-bg", "#201F2B");
+            root.style.setProperty("--widget-body", "#17161F");
+            root.style.setProperty("--widget-text", "#EDEBF3");
+        } else {
+            root.style.setProperty("--widget-bg", "#FFFFFF");
+            root.style.setProperty("--widget-body", "#F6F4EC");
+            root.style.setProperty("--widget-text", "#191826");
+        }
+
+        miniWidget.classList.toggle("pos-right", appearance.position === "right");
+        miniWidget.classList.toggle("pos-left", appearance.position === "left");
+        floatLauncher.classList.toggle("pos-right", appearance.position === "right");
+        floatLauncher.classList.toggle("pos-left", appearance.position === "left");
+
+        const ic = iconClass[appearance.icon] || iconClass.robot;
+        floatIcon.className = "bi " + ic;
+        miniAvatar.innerHTML = `<i class="bi ${ic}"></i>`;
+    }
+    orgNameInput.addEventListener("input", updatePreview);
+    descriptionInput.addEventListener("input", updatePreview);
+    greetingInput.addEventListener("input", updatePreview);
+    updatePreview();
+
+    /* ---------- Submit ---------- */
+    const form = document.getElementById("onboard-form");
+    const submitBtn = document.getElementById("submit-btn");
+    const submitStatus = document.getElementById("submit-status");
+    const submitError = document.getElementById("submit-error");
+
+    function showError(message) {
+        submitError.querySelector("span").textContent = message;
+        submitError.style.display = "flex";
+    }
+    function hideError() { submitError.style.display = "none"; }
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideError();
+
+        if (!businessTypeInput.value) {
+            showError("Please choose a business type.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("organization_name", orgNameInput.value.trim());
+        formData.append("business_type", businessTypeInput.value);
+        formData.append("description", descriptionInput.value.trim());
+        formData.append("greeting_message", greetingInput.value.trim());
+        formData.append("widget_primary_color", appearance.color);
+        formData.append("widget_bubble_style", appearance.shape);
+        formData.append("widget_theme", appearance.theme);
+        formData.append("widget_position", appearance.position);
+        formData.append("widget_icon", appearance.icon);
+        selectedFiles.forEach(file => formData.append("files", file));
+
+        const originalHTML = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i class="bi bi-arrow-repeat"></i> Generating\u2026`;
+        submitStatus.textContent = selectedFiles.length
+            ? `Processing ${selectedFiles.length} document${selectedFiles.length === 1 ? "" : "s"}\u2026 this can take a moment.`
+            : "";
+
+        try {
+            const response = await fetch(`${API_BASE}/admin/onboard`, { method: "POST", body: formData });
+            const data = await response.json();
+
+            if (!response.ok) {
+                showError(data.error || "Something went wrong while setting up your assistant.");
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalHTML;
+                submitStatus.textContent = "";
+                return;
+            }
+
+            showSuccess(data);
+        } catch (err) {
+            showError("Couldn't reach the server. Check your connection and try again.");
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHTML;
+            submitStatus.textContent = "";
+        }
+    });
+
+    /* ---------- Success view ---------- */
+    const formView = document.getElementById("form-view");
+    const successView = document.getElementById("success-view");
+    const stepPip1 = document.getElementById("step-pip-1");
+    const stepPip2 = document.getElementById("step-pip-2");
+
+    const shapeLabel = { rounded: "Rounded", pill: "Pill", square: "Square" };
+    const positionLabel = { right: "Bottom right", left: "Bottom left" };
+
+    function showSuccess(data) {
+        formView.style.display = "none";
+        successView.style.display = "block";
+        stepPip1.classList.remove("active");
+        stepPip1.classList.add("done");
+        stepPip2.classList.add("active");
+
+        document.getElementById("snippet-text").textContent = data.embed_snippet;
+        document.getElementById("result-org-name").textContent = orgNameInput.value.trim();
+        document.getElementById("result-org-id").textContent = data.organization_id;
+        document.getElementById("result-token").textContent = data.embed_token;
+        document.getElementById("result-persona").textContent = data.agent_persona || "\u2014";
+        document.getElementById("result-swatch").style.background = appearance.color;
+        document.getElementById("result-color-hex").textContent = appearance.color.toUpperCase();
+        document.getElementById("result-shape-pos").textContent = `${shapeLabel[appearance.shape]} \u00b7 ${positionLabel[appearance.position]}`;
+
+        const docsResults = document.getElementById("docs-results");
+        const docsList = document.getElementById("docs-list");
+        if (data.documents_processed && data.documents_processed.length) {
+            docsResults.style.display = "block";
+            docsList.innerHTML = "";
+            data.documents_processed.forEach(doc => {
+                const row = document.createElement("div");
+                row.className = "doc-result";
+                row.innerHTML = `<i class="bi bi-check-circle-fill"></i><span class="dname"></span><span class="dmeta"></span>`;
+                row.querySelector(".dname").textContent = doc.filename;
+                row.querySelector(".dmeta").textContent = `${doc.chunks_created} chunks \u00b7 ${doc.strategy}`;
+                docsList.appendChild(row);
+            });
+        }
+    }
+
+    document.getElementById("copy-btn").addEventListener("click", () => {
+        const text = document.getElementById("snippet-text").textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.getElementById("copy-btn");
+            const original = btn.innerHTML;
+            btn.innerHTML = `<i class="bi bi-check-lg"></i>Copied`;
+            btn.classList.add("copied");
+            setTimeout(() => { btn.innerHTML = original; btn.classList.remove("copied"); }, 1800);
+        });
+    });
+
+    document.getElementById("restart-btn").addEventListener("click", () => {
+        form.reset();
+        selectedFiles = [];
+        renderFileList();
+        biztypeGrid.querySelectorAll(".biztype-opt").forEach(el => el.classList.remove("selected"));
+        businessTypeInput.value = "";
+
+        appearance = { color: "#2F6F5E", shape: "rounded", theme: "light", position: "right", icon: "robot" };
+        swatchStrip.querySelectorAll(".swatch").forEach(s => s.classList.remove("selected"));
+        swatchStrip.querySelector('.swatch[data-hex="#2F6F5E"]').classList.add("selected");
+        hexReadout.textContent = "#2F6F5E";
+        document.getElementById("shape-grid").querySelectorAll(".seg-opt").forEach(o => o.classList.remove("selected"));
+        document.getElementById("shape-grid").querySelector('[data-value="rounded"]').classList.add("selected");
+        document.getElementById("theme-grid").querySelectorAll(".seg-opt").forEach(o => o.classList.remove("selected"));
+        document.getElementById("theme-grid").querySelector('[data-value="light"]').classList.add("selected");
+        document.getElementById("position-grid").querySelectorAll(".seg-opt").forEach(o => o.classList.remove("selected"));
+        document.getElementById("position-grid").querySelector('[data-value="right"]').classList.add("selected");
+        iconPicker.querySelectorAll(".icon-opt").forEach(o => o.classList.remove("selected"));
+        iconPicker.querySelector('[data-value="robot"]').classList.add("selected");
+
+        updatePreview();
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="bi bi-magic"></i> Generate my assistant`;
+        submitStatus.textContent = "";
+        hideError();
+
+        successView.style.display = "none";
+        formView.style.display = "block";
+        stepPip1.classList.add("active");
+        stepPip1.classList.remove("done");
+        stepPip2.classList.remove("active");
+    });
+})();
+</script>
+</body>
+</html>
