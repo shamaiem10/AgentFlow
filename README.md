@@ -39,6 +39,7 @@
 
 ## 📖 Table of Contents
 
+<div align="center">
 <table>
 <tr>
 <td width="33%" valign="top">
@@ -73,6 +74,7 @@
 </td>
 </tr>
 </table>
+</div>
 
 ---
 
@@ -97,6 +99,7 @@ Every downstream interaction — chat, retrieval, tool calls, memory — is scop
 
 ## ⚡ Core Capabilities
 
+<div align="center">
 <table>
 <tr><th align="left" width="70%">Capability</th><th align="center">Status</th></tr>
 <tr><td>Text chat + voice chat sharing one orchestration brain</td><td align="center">✅</td></tr>
@@ -112,6 +115,7 @@ Every downstream interaction — chat, retrieval, tool calls, memory — is scop
 <tr><td>Tool calling (MCP-pattern)</td><td align="center">✅</td></tr>
 <tr><td>Per-tenant branding & persona customization</td><td align="center">✅</td></tr>
 </table>
+</div>
 
 ---
 
@@ -147,6 +151,7 @@ flowchart TD
 
 ### 🔒 Two Independent Isolation Layers
 
+<div align="center">
 <table>
 <tr>
 <td width="50%" valign="top">
@@ -165,11 +170,13 @@ Each organization owns a **physically separate collection** (`org_{id}`). Cross-
 </td>
 </tr>
 </table>
+</div>
 
 ---
 
 ## 🧰 Tech Stack
 
+<div align="center">
 <table>
 <tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
 <tr>
@@ -248,6 +255,7 @@ Each organization owns a **physically separate collection** (`org_{id}`). Cross-
 <td>Verifies user identity before session creation</td>
 </tr>
 </table>
+</div>
 
 > **Deliberate constraint:** the backend is plain Python with a minimal dependency surface — no FastAPI, no ORM, no Docker requirement. Every choice favors transparency over framework convenience.
 
@@ -387,11 +395,13 @@ chunks         (id, document_id → documents.id,
 otp_verifications (email, organization_id, otp_code, verified, expires_at)
 ```
 
+<div align="center">
 <table>
 <tr><td width="24">🔐</td><td>One email belongs to exactly <b>one</b> organization — reuse under a different <code>organization_id</code> raises an explicit error rather than silently merging accounts.</td></tr>
 <tr><td width="24">🗄️</td><td>Every RAG query is scoped via a <b>dedicated Chroma collection per tenant</b> — not a shared collection with a filter — eliminating an entire class of "forgot the filter" data-leak bugs.</td></tr>
 <tr><td width="24">🎫</td><td>End users never choose or type their organization. It's cryptographically fixed by the <code>embed_token</code> baked into the <code>&lt;script&gt;</code> tag at onboarding time.</td></tr>
 </table>
+</div>
 
 ---
 
@@ -417,6 +427,7 @@ At login, `get_user_history()` pulls a user's past messages from Postgres and **
 
 No fixed chunking strategy is applied blindly. A **Document Analysis Agent** inspects each file's actual structure and recommends the best fit:
 
+<div align="center">
 <table>
 <tr><th>Strategy</th><th>Best For</th><th>Mechanism</th></tr>
 <tr>
@@ -435,6 +446,7 @@ No fixed chunking strategy is applied blindly. A **Document Analysis Agent** ins
 <td>Detects headers/sections; safe fallback with a hard size cap</td>
 </tr>
 </table>
+</div>
 
 **Unified multi-format ingestion** — one entry point, `parse_document()`:
 
@@ -467,6 +479,8 @@ flowchart LR
     style E fill:#2D3436,color:#fff
 ```
 
+<div align="center">
+
 | Node | Responsibility |
 |---|---|
 | `supervisor_node` | Deterministically skips retrieval for trivial greetings; otherwise a single LLM yes/no judgment |
@@ -474,18 +488,22 @@ flowchart LR
 | `tool_node` | Always evaluated; LLM decides whether a registered tool applies |
 | `generate_node` | Merges persona + tool results + retrieved context under explicit style constraints: concise, no fabrication, no unsolicited padding |
 
+</div>
+
 Splitting the problem into independent, inspectable decisions — rather than one prompt doing everything — is what makes the system debuggable and extensible.
 
 ---
 
 ## 🔐 Security
 
+<div align="center">
 <table>
 <tr><td width="28">📧</td><td><b>OTP email verification</b> — no session is created until the visitor proves ownership of their email</td></tr>
 <tr><td width="28">🎫</td><td><b>Unguessable embed tokens</b> — <code>secrets.token_urlsafe</code>, not sequential IDs</td></tr>
 <tr><td width="28">🚫</td><td><b>One-email-one-organization enforcement</b> — explicit rejection of cross-tenant reuse</td></tr>
 <tr><td width="28">🌍</td><td><b>CORS-enabled, origin-agnostic API</b> — embeddable anywhere, still validated against real tenant data</td></tr>
 </table>
+</div>
 
 ---
 
@@ -542,6 +560,7 @@ Open `widget/test.html` to see it live. 🎉
 
 ## 🔌 API Reference
 
+<div align="center">
 <table>
 <tr><th>Endpoint</th><th>Method</th><th>Purpose</th></tr>
 <tr><td><code>/admin/onboard</code></td><td><code>POST</code></td><td>Register a tenant, bulk-upload knowledge base, receive embed snippet</td></tr>
@@ -554,11 +573,13 @@ Open `widget/test.html` to see it live. 🎉
 <tr><td><code>/voice/transcribe</code></td><td><code>POST</code></td><td>Audio → text (Groq Whisper)</td></tr>
 <tr><td><code>/voice/speak</code></td><td><code>POST</code></td><td>Text → audio (edge-tts)</td></tr>
 </table>
+</div>
 
 ---
 
 ## ⚖️ Design Decisions & Trade-offs
 
+<div align="center">
 <table>
 <tr><th>Decision</th><th>Reasoning</th></tr>
 <tr>
@@ -590,6 +611,7 @@ Open `widget/test.html` to see it live. 🎉
 <td>Unconstrained auto-generated personas trended promotional and verbose, measurably degrading response quality</td>
 </tr>
 </table>
+</div>
 
 ---
 
