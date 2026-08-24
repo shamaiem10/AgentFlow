@@ -627,29 +627,9 @@ Open `widget/test.html` to see it live. 🎉
 
 ---
 
-## 🗺️ Roadmap
 
-- [ ] Persistent authentication layer (password + session tokens)
-- [ ] Postgres Row-Level Security as defense-in-depth
-- [ ] Connection pooling for concurrent request handling
-- [ ] Real external MCP server integrations (calendar, CRM, email)
-- [ ] Per-tenant admin dashboard (analytics, history, knowledge-base management)
-- [ ] Production deployment — CDN-hosted widget, containerized backend, managed Postgres/Redis
 
----
 
-<div align="center">
-
-### 📜 License
-
-**Proprietary** — internal project (AgentFlow / Matrix AE)
-
-<br>
-
-*Built as a hands-on exploration of multi-agent orchestration, multi-tenant SaaS architecture,*
-*and retrieval-augmented generation — every dependency chosen for transparency over convenience.*
-
-<br>
 
 ⭐ **AgentFlow** ⭐
 
